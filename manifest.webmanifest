@@ -1,0 +1,16 @@
+{
+  "name": "PumpLog",
+  "short_name": "PumpLog",
+  "description": "Pump-focused arms and pull-up workout log with streaks, progression coaching, backup/restore and responsive exercise charts.",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#E5E3D2",
+  "theme_color": "#E5E3D2",
+  "orientation": "portrait-primary",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

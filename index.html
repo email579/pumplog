@@ -1,0 +1,1387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>PumpLog</title>
+  <meta name="theme-color" content="#E5E3D2">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="PumpLog">
+  <meta name="format-detection" content="telephone=no">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <link rel="icon" href="icons/icon-192.png">
+  <style>
+    :root {
+      --bg: #E5E3D2;          /* Platinum */
+      --card: #FFFFFF;
+      --card2: #AECACD;       /* Powder Blue */
+      --accent: #FF5B19;      /* Tangerine Tango */
+      --accent2: #FF5B19;
+      --accent3: #FF5B19;
+      --text: #161616;        /* Charcoal */
+      --muted: #5A5A5A;
+      --danger: #E53935;
+      --border: #D4D1C4;
+      --soft: #F8F7F2;
+      --powder-dark: #2A4A4E;
+      --orange-dark: #C43D0A;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    button, input, select { font: inherit; }
+    button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: calc(80px + env(safe-area-inset-bottom));
+      line-height: 1.4;
+    }
+    header {
+      background: #FFFFFF;
+      padding: calc(1.2rem + env(safe-area-inset-top)) 1rem 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 1px solid var(--border);
+    }
+    header h1 {
+      color: var(--text);
+      font-size: 1.35rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+    }
+    .brand-mark {
+      width: 1.9rem;
+      height: 1.9rem;
+      display: block;
+      border-radius: 0.45rem;
+      flex: 0 0 auto;
+      box-shadow: 0 1px 4px rgba(22, 22, 22, 0.08);
+    }
+    .tabs {
+      display: flex;
+      background: #FFFFFF;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: calc(72px + env(safe-area-inset-top));
+      z-index: 99;
+    }
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 0.85rem 0.5rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      border: 0;
+      border-bottom: 3px solid transparent;
+      background: transparent;
+      appearance: none;
+      transition: all 0.2s;
+    }
+    .tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+      background: rgba(255, 91, 25, 0.06);
+    }
+    .panel { display: none; padding: 1rem; max-width: 640px; margin: 0 auto; }
+    .panel.active { display: block; }
+    .card {
+      background: var(--card);
+      border-radius: 14px;
+      padding: 1.1rem;
+      margin-bottom: 1rem;
+      border: 1px solid var(--border);
+      box-shadow: 0 2px 8px rgba(22, 22, 22, 0.04);
+    }
+    .card h2 {
+      font-size: 1.05rem;
+      margin-bottom: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      color: var(--text);
+    }
+    .card h3 {
+      font-size: 0.95rem;
+      color: var(--muted);
+      margin-bottom: 0.6rem;
+      font-weight: 600;
+    }
+    label {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 0.25rem;
+    }
+    input[type="number"], input[type="text"], input[type="date"], select {
+      width: 100%;
+      padding: 0.65rem 0.75rem;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--soft);
+      color: var(--text);
+      font-size: 1rem;
+      margin-bottom: 0.75rem;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      padding: 0.75rem 1.1rem;
+      border-radius: 12px;
+      border: none;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.1s, opacity 0.2s;
+      width: 100%;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-success { background: var(--accent); color: #FFFFFF; }
+    .btn-warning { background: var(--accent); color: #FFFFFF; }
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .btn-danger { background: var(--danger); color: white; }
+    .btn-sm { padding: 0.45rem 0.7rem; font-size: 0.8rem; width: auto; }
+    .streak {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: var(--card2);
+      border: 1px solid rgba(174, 202, 205, 0.65);
+      border-radius: 12px;
+      padding: 0.85rem 1rem;
+      margin-bottom: 1rem;
+    }
+    .streak-num {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--accent);
+    }
+    .goal-box {
+      background: var(--soft);
+      border-radius: 10px;
+      padding: 0.75rem;
+      margin-bottom: 0.75rem;
+      font-size: 0.9rem;
+    }
+    .goal-box strong { color: var(--accent); }
+    .progression-box {
+      background: rgba(174, 202, 205, 0.32);
+      border: 1px solid rgba(174, 202, 205, 0.85);
+      border-radius: 10px;
+      padding: 0.75rem;
+      margin: 0.1rem 0 0.75rem;
+      font-size: 0.86rem;
+      line-height: 1.45;
+    }
+    .progression-box.ready {
+      background: rgba(255, 91, 25, 0.10);
+      border-color: rgba(255, 91, 25, 0.35);
+    }
+    .progression-box strong { color: var(--text); }
+    .progression-box .progression-accent { color: var(--accent); font-weight: 800; }
+    .progression-box .progression-sub { color: var(--muted); margin-top: 0.15rem; }
+    .check {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.6rem 0;
+      font-size: 0.95rem;
+    }
+    .check input { width: 20px; height: 20px; accent-color: var(--accent); }
+    .history-item {
+      background: var(--soft);
+      border-radius: 10px;
+      padding: 0.85rem;
+      margin-bottom: 0.6rem;
+      font-size: 0.9rem;
+    }
+    .history-item .date {
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 0.35rem;
+    }
+    .badge {
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-right: 0.3rem;
+    }
+    .badge-blue { background: rgba(174, 202, 205, 0.35); color: var(--powder-dark); }
+    .badge-green { background: rgba(255, 91, 25, 0.15); color: var(--orange-dark); }
+    .badge-orange { background: rgba(255, 91, 25, 0.20); color: var(--orange-dark); }
+    .progress-bar {
+      height: 10px;
+      background: #E8E6DC;
+      border-radius: 999px;
+      overflow: hidden;
+      margin: 0.5rem 0;
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 999px;
+      transition: width 0.4s ease;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+    .stat {
+      background: var(--soft);
+      border-radius: 12px;
+      padding: 0.9rem;
+      text-align: center;
+    }
+    .stat-val {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--accent);
+    }
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 0.2rem;
+    }
+    .chart-card { padding-bottom: 0.95rem; }
+    .chart-summary {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+      margin-bottom: 0.8rem;
+    }
+    .chart-metric {
+      min-width: 0;
+      text-align: center;
+      padding: 0.55rem 0.35rem;
+      border-right: 1px solid var(--border);
+    }
+    .chart-metric:last-child { border-right: 0; }
+    .chart-metric-value {
+      color: var(--text);
+      font-weight: 800;
+      font-size: 1.05rem;
+      line-height: 1.15;
+      overflow-wrap: anywhere;
+    }
+    .chart-metric-value.accent { color: var(--accent); }
+    .chart-metric-label {
+      margin-top: 0.2rem;
+      color: var(--muted);
+      font-size: 0.68rem;
+      line-height: 1.2;
+    }
+    .chart-wrap {
+      width: 100%;
+      overflow: hidden;
+      margin-top: 0.2rem;
+    }
+    .progress-chart {
+      display: block;
+      width: 100%;
+      height: auto;
+      min-height: 170px;
+    }
+    .chart-foot {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.45rem;
+      background: rgba(174, 202, 205, 0.28);
+      border: 1px solid rgba(174, 202, 205, 0.65);
+      border-radius: 10px;
+      padding: 0.65rem 0.4rem;
+      margin-top: 0.65rem;
+      text-align: center;
+    }
+    .chart-foot strong { display:block; font-size:0.92rem; color:var(--text); }
+    .chart-foot span { display:block; font-size:0.66rem; color:var(--muted); margin-top:0.15rem; }
+    .progress-history { margin-top: 0.8rem; }
+    .progress-history-head {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:0.5rem;
+      margin-bottom:0.45rem;
+      font-size:0.78rem;
+      font-weight:700;
+    }
+    .progress-history-grid {
+      display:grid;
+      grid-template-columns:repeat(3, 1fr);
+      gap:0.45rem;
+    }
+    .progress-history-item {
+      background:var(--soft);
+      border-radius:9px;
+      padding:0.55rem 0.35rem;
+      text-align:center;
+      min-width:0;
+    }
+    .progress-history-date { font-size:0.64rem; color:var(--muted); }
+    .progress-history-change { margin-top:0.15rem; font-size:0.74rem; font-weight:750; color:var(--text); overflow-wrap:anywhere; }
+    .progress-history-empty { color:var(--muted); font-size:0.76rem; background:var(--soft); border-radius:9px; padding:0.7rem; }
+    @media (max-width: 390px) {
+      .chart-summary { gap:0.2rem; }
+      .chart-metric { padding:0.45rem 0.18rem; }
+      .chart-metric-value { font-size:0.94rem; }
+      .chart-metric-label { font-size:0.62rem; }
+      .progress-history-change { font-size:0.67rem; }
+    }
+
+    .empty {
+      text-align: center;
+      color: var(--muted);
+      padding: 2rem 1rem;
+      font-size: 0.95rem;
+    }
+    .note {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 0.5rem;
+    }
+    footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #FFFFFF;
+      border-top: 1px solid var(--border);
+      padding: 0.6rem;
+      padding-bottom: calc(0.6rem + env(safe-area-inset-bottom));
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+    .toast {
+      position: fixed;
+      bottom: calc(70px + env(safe-area-inset-bottom));
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--accent);
+      color: #FFFFFF;
+      padding: 0.7rem 1.2rem;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      opacity: 0;
+      transition: opacity 0.3s;
+      z-index: 200;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; }
+    @media (min-width: 500px) {
+      .row-3 { grid-template-columns: 1fr 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1><img src="icons/icon-192.png" alt="" class="brand-mark">PumpLog</h1>
+  </header>
+
+  <div class="tabs" role="tablist" aria-label="PumpLog sections">
+    <button class="tab active" data-tab="today" role="tab" aria-selected="true" aria-controls="today">Today</button>
+    <button class="tab" data-tab="history" role="tab" aria-selected="false" aria-controls="history">History</button>
+    <button class="tab" data-tab="progress" role="tab" aria-selected="false" aria-controls="progress">Progress</button>
+    <button class="tab" data-tab="plans" role="tab" aria-selected="false" aria-controls="plans">Plans</button>
+  </div>
+
+  <!-- TODAY -->
+  <div id="today" class="panel active" role="tabpanel">
+    <div class="streak" id="streakBox">
+      <div class="streak-num" id="streakNum">0</div>
+      <div>
+        <div style="font-weight:700">Day Streak</div>
+        <div style="font-size:0.85rem;color:var(--muted)" id="streakSub">Start logging to begin</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>📅 <span id="todayDate"></span></h2>
+      <div class="goal-box" id="dailyGoals">
+        Loading suggested targets…
+      </div>
+    </div>
+
+    <!-- BICEPS -->
+    <div class="card">
+      <h2>Biceps (Curls)</h2>
+      <div class="row">
+        <div>
+          <label>Weight (kg)</label>
+          <input type="number" id="biWeight" step="0.5" min="0" placeholder="5">
+        </div>
+        <div>
+          <label>Target reps</label>
+          <input type="number" id="biTarget" value="100" min="1">
+        </div>
+      </div>
+      <label>Repetitions</label>
+      <input type="number" id="biReps" min="0" placeholder="0">
+      <div class="progression-box" id="biProgression" aria-live="polite">
+        Log your sessions to unlock progression guidance.
+      </div>
+      <label>Notes (optional)</label>
+      <input type="text" id="biNotes" maxlength="500" placeholder="e.g. 10×10 curls · controlled tempo">
+      <div class="check">
+        <input type="checkbox" id="biDone">
+        <label for="biDone" style="margin:0;font-size:0.95rem;color:var(--text)">Marked complete for today</label>
+      </div>
+    </div>
+
+    <!-- TRICEPS -->
+    <div class="card">
+      <h2>Triceps</h2>
+      <div class="row">
+        <div>
+          <label>Weight (kg)</label>
+          <input type="number" id="triWeight" step="0.5" min="0" placeholder="5">
+        </div>
+        <div>
+          <label>Target reps</label>
+          <input type="number" id="triTarget" value="100" min="1">
+        </div>
+      </div>
+      <label>Repetitions</label>
+      <input type="number" id="triReps" min="0" placeholder="0">
+      <div class="progression-box" id="triProgression" aria-live="polite">
+        Log your sessions to unlock progression guidance.
+      </div>
+      <label>Notes (optional)</label>
+      <input type="text" id="triNotes" maxlength="500" placeholder="e.g. 10×10 extensions · light pump work">
+      <div class="check">
+        <input type="checkbox" id="triDone">
+        <label for="triDone" style="margin:0;font-size:0.95rem;color:var(--text)">Marked complete for today</label>
+      </div>
+    </div>
+
+    <!-- PULL-UPS -->
+    <div class="card">
+      <h2>Pull-ups</h2>
+      <div class="row">
+        <div>
+          <label>Target total reps</label>
+          <input type="number" id="puTarget" min="1" placeholder="24">
+        </div>
+        <div>
+          <label>Total reps today</label>
+          <input type="number" id="puTotal" min="0" placeholder="0">
+        </div>
+      </div>
+      <label>Best single set</label>
+      <input type="number" id="puBest" min="0" placeholder="0">
+      <div class="progression-box" id="puProgression" aria-live="polite">
+        Log your sessions to unlock pull-up progression guidance.
+      </div>
+      <label>Notes / sets (optional)</label>
+      <input type="text" id="puNotes" maxlength="500" placeholder="e.g. 6×5 + 4">
+      <div class="check">
+        <input type="checkbox" id="puDone">
+        <label for="puDone" style="margin:0;font-size:0.95rem;color:var(--text)">Marked complete for today</label>
+      </div>
+    </div>
+
+    <button class="btn btn-success" id="saveBtn" onclick="saveToday()">💾 Save Today’s Workout</button>
+    <p class="note" style="text-align:center;margin-top:0.75rem">Data is saved on this device. Use History → Backup / Export JSON regularly.</p>
+  </div>
+
+  <!-- HISTORY -->
+  <div id="history" class="panel" role="tabpanel">
+    <div class="card">
+      <h2>📜 Workout History</h2>
+      <div id="historyList" class="empty">No entries yet. Log your first day!</div>
+    </div>
+    <button class="btn btn-ghost" onclick="exportData()" style="margin-top:0.5rem">⬇️ Backup / Export JSON</button>
+    <button class="btn btn-ghost" onclick="$('importFile').click()" style="margin-top:0.75rem">⬆️ Restore JSON Backup</button>
+    <input type="file" id="importFile" accept="application/json,.json" hidden onchange="importData(event)">
+    <button class="btn btn-danger btn-sm" onclick="clearAll()" style="margin-top:0.75rem;width:100%">Clear all data</button>
+  </div>
+
+  <!-- PROGRESS -->
+  <div id="progress" class="panel" role="tabpanel">
+    <div class="card">
+      <h2>📈 Overview</h2>
+      <div class="stats-grid" id="statsGrid">
+        <div class="stat"><div class="stat-val" id="sDays">0</div><div class="stat-label">Days logged</div></div>
+        <div class="stat"><div class="stat-val" id="sStreak">0</div><div class="stat-label">Current streak</div></div>
+        <div class="stat"><div class="stat-val" id="sBi">0</div><div class="stat-label">Bicep sessions</div></div>
+        <div class="stat"><div class="stat-val" id="sPu">0</div><div class="stat-label">Pull-up sessions</div></div>
+      </div>
+    </div>
+
+    <div class="card chart-card">
+      <h2>Biceps Progress</h2>
+      <div id="biProgress" class="empty">Log some biceps work to see progress.</div>
+    </div>
+
+    <div class="card chart-card">
+      <h2>Triceps Progress</h2>
+      <div id="triProgress" class="empty">Log some triceps work to see progress.</div>
+    </div>
+
+    <div class="card chart-card">
+      <h2>Pull-up Progress</h2>
+      <div id="puProgress" class="empty">Log some pull-ups to see progress.</div>
+    </div>
+
+    <div class="card">
+      <h2>🔥 90-Day Challenge</h2>
+      <div id="challengeBox">
+        <div style="display:flex;justify-content:space-between;font-size:0.9rem;margin-bottom:0.3rem">
+          <span>Days completed</span>
+          <span id="chalText">0 / 90</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="chalBar" style="width:0%"></div></div>
+        <p class="note" id="chalNote">Start logging daily to begin the challenge.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- PLANS -->
+  <div id="plans" class="panel" role="tabpanel">
+    <div class="card">
+      <h2>📋 Suggested Plans</h2>
+      <p style="font-size:0.9rem;color:var(--muted);margin-bottom:1rem">
+        Based on your starting point (5 kg arms + 12 pull-up max). Adjust as needed.
+      </p>
+
+      <h3>Biceps & Triceps Feeder</h3>
+      <div class="goal-box">
+        <strong>Goal:</strong> 100 controlled reps daily<br>
+        Start light (5 kg). Increase weight only after 3 consecutive clean days.<br><br>
+        <strong>Suggested weight progression:</strong><br>
+        Days 1–14 → 5 kg<br>
+        Days 15–28 → 6–7.5 kg<br>
+        Days 29–45 → 7.5–8 kg<br>
+        Days 46–60 → 8–10 kg<br>
+        Days 61–75 → 10–12.5 kg<br>
+        Days 76–90 → 12.5–15 kg
+      </div>
+
+      <h3 style="margin-top:1.2rem">Pull-up Feeder (from 12 max)</h3>
+      <div class="goal-box">
+        <strong>Daily volume targets (never to failure):</strong><br><br>
+        Days 1–14 → 24–30 total reps (sets of 5–6)<br>
+        Days 15–30 → 30–36 total reps<br>
+        Days 31–45 → 36–42 total reps<br>
+        Days 46–60 → 40–48 total reps<br>
+        Days 61–75 → 45–54 total reps<br>
+        Days 76–90 → 50–60 total reps<br><br>
+        Focus on slow eccentrics and perfect form. Add light weight only late in the cycle if form stays excellent.
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>⚙️ Settings</h2>
+      <label>Challenge start date</label>
+      <input type="date" id="startDate">
+      <button class="btn btn-primary" onclick="saveStartDate()">Save Start Date</button>
+      <p class="note">Used to calculate which phase of the 90-day plan you are in.</p>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite">Saved!</div>
+  <footer>PumpLog v2.4.3 · Offline-ready · Data stays on your device</footer>
+
+  <script>
+    // ---------- Helpers ----------
+    const $ = id => document.getElementById(id);
+    const APP_VERSION = '2.4.1';
+
+    function localISO(date = new Date()) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function todayISO() {
+      return localISO(new Date());
+    }
+
+    function dateFromISO(iso) {
+      const [y, m, d] = iso.split('-').map(Number);
+      return new Date(y, m - 1, d, 12, 0, 0);
+    }
+
+    function utcDayNumber(iso) {
+      const [y, m, d] = iso.split('-').map(Number);
+      return Math.floor(Date.UTC(y, m - 1, d) / 86400000);
+    }
+
+    function isValidISODate(value) {
+      if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+      const date = dateFromISO(value);
+      return localISO(date) === value;
+    }
+
+    function safeNumber(value) {
+      const n = Number(value);
+      return Number.isFinite(n) && n >= 0 ? n : 0;
+    }
+
+    function safeInteger(value, fallback = 0) {
+      const n = Math.trunc(Number(value));
+      return Number.isFinite(n) && n >= 0 ? n : fallback;
+    }
+
+    function escapeHTML(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function sanitizeLogs(logs) {
+      const clean = {};
+      if (!logs || typeof logs !== 'object' || Array.isArray(logs)) return clean;
+
+      Object.entries(logs).forEach(([date, log]) => {
+        if (!isValidISODate(date) || !log || typeof log !== 'object') return;
+        clean[date] = {
+          bi: {
+            weight: safeNumber(log.bi?.weight),
+            // Backward compatibility: old backups stored separate left/right counts.
+            // Use the larger side as the single recorded rep value rather than doubling it.
+            reps: safeInteger(log.bi?.reps ?? Math.max(safeInteger(log.bi?.left), safeInteger(log.bi?.right))),
+            target: safeInteger(log.bi?.target, 100) || 100,
+            notes: typeof log.bi?.notes === 'string' ? log.bi.notes.slice(0, 500) : '',
+            done: Boolean(log.bi?.done)
+          },
+          tri: {
+            weight: safeNumber(log.tri?.weight),
+            reps: safeInteger(log.tri?.reps ?? Math.max(safeInteger(log.tri?.left), safeInteger(log.tri?.right))),
+            target: safeInteger(log.tri?.target, 100) || 100,
+            notes: typeof log.tri?.notes === 'string' ? log.tri.notes.slice(0, 500) : '',
+            done: Boolean(log.tri?.done)
+          },
+          pu: {
+            // v2.3 adds an explicit pull-up target. Older backups did not store one,
+            // so target 0 means “unknown” and is not counted toward progression.
+            target: safeInteger(log.pu?.target),
+            total: safeInteger(log.pu?.total),
+            best: safeInteger(log.pu?.best),
+            notes: typeof log.pu?.notes === 'string' ? log.pu.notes.slice(0, 500) : '',
+            done: Boolean(log.pu?.done)
+          }
+        };
+      });
+
+      return clean;
+    }
+
+    function loadData() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem('feederData') || '{}');
+        return {
+          schemaVersion: 4,
+          logs: sanitizeLogs(parsed?.logs),
+          startDate: isValidISODate(parsed?.startDate) ? parsed.startDate : null
+        };
+      } catch {
+        return { schemaVersion: 4, logs: {}, startDate: null };
+      }
+    }
+
+    function saveData(data) {
+      const clean = {
+        schemaVersion: 4,
+        logs: sanitizeLogs(data.logs),
+        startDate: isValidISODate(data.startDate) ? data.startDate : null
+      };
+      localStorage.setItem('feederData', JSON.stringify(clean));
+    }
+
+    function showToast(msg) {
+      const t = $('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 1800);
+    }
+
+    // ---------- Tabs ----------
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => {
+          t.classList.remove('active');
+          t.setAttribute('aria-selected', 'false');
+        });
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        tab.setAttribute('aria-selected', 'true');
+        $(tab.dataset.tab).classList.add('active');
+        if (tab.dataset.tab === 'history') renderHistory();
+        if (tab.dataset.tab === 'progress') renderProgress();
+      });
+    });
+
+    // ---------- Today ----------
+    function getPhaseDay() {
+      const data = loadData();
+      if (!data.startDate) return 1;
+      const diff = utcDayNumber(todayISO()) - utcDayNumber(data.startDate) + 1;
+      return Math.max(1, Math.min(90, diff));
+    }
+
+    function roundToHalf(value) {
+      return Math.round((Number(value) + Number.EPSILON) * 2) / 2;
+    }
+
+    function formatKg(value) {
+      const rounded = roundToHalf(value);
+      return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
+    }
+
+    function getArmProgression(exerciseKey, preferredWeight, preferredTarget) {
+      const data = loadData();
+      const today = todayISO();
+      const dates = Object.keys(data.logs).sort().reverse();
+      const currentLog = data.logs[today]?.[exerciseKey];
+
+      // Use what is currently entered in the form first. If the form is blank,
+      // fall back to today's saved value, then the most recent logged weight.
+      let weight = safeNumber(preferredWeight);
+      let target = safeInteger(preferredTarget, 100) || 100;
+
+      if (!weight && currentLog?.weight) weight = safeNumber(currentLog.weight);
+      if (currentLog?.target && !preferredTarget) target = safeInteger(currentLog.target, 100) || 100;
+
+      if (!weight) {
+        for (const date of dates) {
+          const session = data.logs[date]?.[exerciseKey];
+          if (session?.weight > 0) {
+            weight = safeNumber(session.weight);
+            if (!preferredTarget && session.target) target = safeInteger(session.target, 100) || 100;
+            break;
+          }
+        }
+      }
+
+      if (!weight) {
+        return {
+          ready: false,
+          successes: 0,
+          weight: 0,
+          nextWeight: 0,
+          target,
+          message: 'Enter your working weight. Hit your target for 3 consecutive sessions to earn a +0.5 kg suggestion.'
+        };
+      }
+
+      weight = roundToHalf(weight);
+      let successes = 0;
+      let considered = 0;
+
+      // Count consecutive successful sessions at this exact working weight.
+      // A miss at the same weight resets the run; changing weight starts a new run.
+      for (const date of dates) {
+        const session = data.logs[date]?.[exerciseKey];
+        if (!session || !session.weight || !session.reps) continue;
+
+        const sessionWeight = roundToHalf(session.weight);
+        if (sessionWeight !== weight) {
+          if (considered > 0) break;
+          continue;
+        }
+
+        considered++;
+        const sessionTarget = safeInteger(session.target, target) || target;
+        if (safeInteger(session.reps) >= sessionTarget) {
+          successes++;
+          if (successes >= 3) break;
+        } else {
+          break;
+        }
+      }
+
+      const ready = successes >= 3;
+      const nextWeight = roundToHalf(weight + 0.5);
+      return {
+        ready,
+        successes: Math.min(successes, 3),
+        weight,
+        nextWeight,
+        target,
+        message: ready
+          ? `Ready to progress: increase from ${formatKg(weight)} kg to ${formatKg(nextWeight)} kg. Keep the same rep target.`
+          : `Stay at ${formatKg(weight)} kg — ${successes}/3 successful sessions at your target.`
+      };
+    }
+
+    function renderArmProgression(exerciseKey) {
+      const prefix = exerciseKey === 'bi' ? 'bi' : 'tri';
+      const box = $(`${prefix}Progression`);
+      if (!box) return;
+
+      const weight = parseFloat($(`${prefix}Weight`).value) || 0;
+      const target = parseInt($(`${prefix}Target`).value) || 100;
+      const progression = getArmProgression(exerciseKey, weight, target);
+
+      box.classList.toggle('ready', progression.ready);
+      if (progression.ready) {
+        box.innerHTML = `<strong>Progression:</strong> <span class="progression-accent">+0.5 kg recommended</span><div class="progression-sub">${escapeHTML(progression.message)}</div>`;
+      } else {
+        box.innerHTML = `<strong>Progression:</strong> ${progression.successes}/3<div class="progression-sub">${escapeHTML(progression.message)}</div>`;
+      }
+    }
+
+    function getPullupProgression(preferredTarget) {
+      const data = loadData();
+      const today = todayISO();
+      const dates = Object.keys(data.logs).sort().reverse();
+      const currentLog = data.logs[today]?.pu;
+
+      let target = safeInteger(preferredTarget);
+      if (!target && currentLog?.target) target = safeInteger(currentLog.target);
+
+      // If today's target is blank, use the most recent explicit pull-up target.
+      if (!target) {
+        for (const date of dates) {
+          const session = data.logs[date]?.pu;
+          if (session?.target > 0) {
+            target = safeInteger(session.target);
+            break;
+          }
+        }
+      }
+
+      if (!target) {
+        return {
+          ready: false,
+          successes: 0,
+          target: 0,
+          nextTarget: 0,
+          message: 'Set a pull-up target. Hit or exceed it for 3 consecutive sessions to earn a +2 rep suggestion.'
+        };
+      }
+
+      let successes = 0;
+      let considered = 0;
+
+      // Count consecutive successful sessions at this exact target.
+      // A miss at the same target resets the run; changing the target starts a new run.
+      for (const date of dates) {
+        const session = data.logs[date]?.pu;
+        if (!session || !session.target || !session.total) continue;
+
+        const sessionTarget = safeInteger(session.target);
+        if (sessionTarget !== target) {
+          if (considered > 0) break;
+          continue;
+        }
+
+        considered++;
+        if (safeInteger(session.total) >= sessionTarget) {
+          successes++;
+          if (successes >= 3) break;
+        } else {
+          break;
+        }
+      }
+
+      const ready = successes >= 3;
+      const nextTarget = target + 2;
+      return {
+        ready,
+        successes: Math.min(successes, 3),
+        target,
+        nextTarget,
+        message: ready
+          ? `Ready to progress: increase your pull-up target from ${target} to ${nextTarget} total reps.`
+          : `Stay at ${target} total reps — ${successes}/3 successful sessions at your target.`
+      };
+    }
+
+    function renderPullupProgression() {
+      const box = $('puProgression');
+      if (!box) return;
+
+      const target = parseInt($('puTarget').value) || 0;
+      const progression = getPullupProgression(target);
+
+      box.classList.toggle('ready', progression.ready);
+      if (progression.ready) {
+        box.innerHTML = `<strong>Progression:</strong> <span class="progression-accent">+2 reps recommended</span><div class="progression-sub">${escapeHTML(progression.message)}</div>`;
+      } else {
+        box.innerHTML = `<strong>Progression:</strong> ${progression.successes}/3<div class="progression-sub">${escapeHTML(progression.message)}</div>`;
+      }
+    }
+
+    function renderProgressionRecommendations() {
+      renderArmProgression('bi');
+      renderArmProgression('tri');
+      renderPullupProgression();
+    }
+
+    function getSuggestedTargets(day) {
+      // Arms weight suggestion
+      let armWeight = '5 kg';
+      if (day >= 76) armWeight = '12.5–15 kg';
+      else if (day >= 61) armWeight = '10–12.5 kg';
+      else if (day >= 46) armWeight = '8–10 kg';
+      else if (day >= 29) armWeight = '7.5–8 kg';
+      else if (day >= 15) armWeight = '6–7.5 kg';
+
+      // Pull-up volume. The range is coaching context; the lower bound becomes
+      // the initial explicit target until the +2-rep progression system takes over.
+      let puTarget = '24–30';
+      let puTargetDefault = 24;
+      if (day >= 76) { puTarget = '50–60'; puTargetDefault = 50; }
+      else if (day >= 61) { puTarget = '45–54'; puTargetDefault = 45; }
+      else if (day >= 46) { puTarget = '40–48'; puTargetDefault = 40; }
+      else if (day >= 31) { puTarget = '36–42'; puTargetDefault = 36; }
+      else if (day >= 15) { puTarget = '30–36'; puTargetDefault = 30; }
+
+      return { armWeight, puTarget, puTargetDefault, day };
+    }
+
+    function loadTodayForm() {
+      const data = loadData();
+      const d = todayISO();
+      $('todayDate').textContent = new Date().toLocaleDateString(undefined, {
+        weekday: 'long', year: 'numeric', month: 'short', day: 'numeric'
+      });
+
+      const phase = getPhaseDay();
+      const sug = getSuggestedTargets(phase);
+      $('dailyGoals').innerHTML = `
+        <strong>Day ${phase} of 90</strong><br>
+        Suggested arms weight: <strong>${sug.armWeight}</strong> · 100 reps<br>
+        Suggested pull-ups: <strong>${sug.puTarget}</strong> total quality reps
+      `;
+
+      const log = data.logs[d] || {};
+      $('biWeight').value = log.bi?.weight ?? '';
+      $('biReps').value = log.bi?.reps ?? '';
+      $('biTarget').value = log.bi?.target ?? 100;
+      $('biNotes').value = log.bi?.notes ?? '';
+      $('biDone').checked = !!log.bi?.done;
+
+      $('triWeight').value = log.tri?.weight ?? '';
+      $('triReps').value = log.tri?.reps ?? '';
+      $('triTarget').value = log.tri?.target ?? 100;
+      $('triNotes').value = log.tri?.notes ?? '';
+      $('triDone').checked = !!log.tri?.done;
+
+      // Continue the most recently used pull-up target when possible.
+      let recentPuTarget = 0;
+      if (!log.pu?.target) {
+        const priorDates = Object.keys(data.logs).sort().reverse();
+        for (const date of priorDates) {
+          if (date === d) continue;
+          const t = safeInteger(data.logs[date]?.pu?.target);
+          if (t > 0) { recentPuTarget = t; break; }
+        }
+      }
+      $('puTarget').value = log.pu?.target || recentPuTarget || sug.puTargetDefault;
+      $('puTotal').value = log.pu?.total ?? '';
+      $('puBest').value = log.pu?.best ?? '';
+      $('puNotes').value = log.pu?.notes ?? '';
+      $('puDone').checked = !!log.pu?.done;
+
+      renderProgressionRecommendations();
+
+      // Prefill start date field
+      $('startDate').value = data.startDate || todayISO();
+    }
+
+    function saveToday() {
+      const data = loadData();
+      const d = todayISO();
+      data.logs[d] = {
+        bi: {
+          weight: parseFloat($('biWeight').value) || 0,
+          reps: parseInt($('biReps').value) || 0,
+          target: parseInt($('biTarget').value) || 100,
+          notes: $('biNotes').value.trim(),
+          done: $('biDone').checked
+        },
+        tri: {
+          weight: parseFloat($('triWeight').value) || 0,
+          reps: parseInt($('triReps').value) || 0,
+          target: parseInt($('triTarget').value) || 100,
+          notes: $('triNotes').value.trim(),
+          done: $('triDone').checked
+        },
+        pu: {
+          target: parseInt($('puTarget').value) || 0,
+          total: parseInt($('puTotal').value) || 0,
+          best: parseInt($('puBest').value) || 0,
+          notes: $('puNotes').value.trim(),
+          done: $('puDone').checked
+        }
+      };
+      if (!data.startDate) data.startDate = d;
+      saveData(data);
+      updateStreak();
+      renderProgressionRecommendations();
+      showToast('Saved ✓');
+    }
+
+    function updateStreak() {
+      const data = loadData();
+      const dates = Object.keys(data.logs).sort().reverse();
+      let streak = 0;
+      let check = dateFromISO(todayISO());
+      for (let i = 0; i < 400; i++) {
+        const iso = localISO(check);
+        const log = data.logs[iso];
+        const completed = log && (log.bi?.done || log.tri?.done || log.pu?.done ||
+          (log.bi?.reps > 0) ||
+          (log.tri?.reps > 0) ||
+          (log.pu?.total > 0));
+        if (completed) {
+          streak++;
+          check.setDate(check.getDate() - 1);
+        } else {
+          // allow missing today if we haven't logged yet
+          if (iso === todayISO() && streak === 0) {
+            check.setDate(check.getDate() - 1);
+            continue;
+          }
+          break;
+        }
+      }
+      $('streakNum').textContent = streak;
+      $('streakSub').textContent = streak === 0 ? 'Start logging to begin' :
+        streak === 1 ? 'Great start!' : 'Keep the chain going 🔥';
+    }
+
+    // ---------- History ----------
+    function renderHistory() {
+      const data = loadData();
+      const dates = Object.keys(data.logs).sort().reverse();
+      const list = $('historyList');
+      if (dates.length === 0) {
+        list.innerHTML = '<div class="empty">No entries yet. Log your first day!</div>';
+        return;
+      }
+      list.innerHTML = dates.map(d => {
+        const l = data.logs[d];
+        const parts = [];
+        if (l.bi && (l.bi.reps || l.bi.done)) {
+          parts.push(`<span class="badge badge-blue">Biceps ${l.bi.weight}kg · ${l.bi.reps} reps</span>`);
+        }
+        if (l.tri && (l.tri.reps || l.tri.done)) {
+          parts.push(`<span class="badge badge-green">Triceps ${l.tri.weight}kg · ${l.tri.reps} reps</span>`);
+        }
+        if (l.pu && (l.pu.total || l.pu.done)) {
+          parts.push(`<span class="badge badge-orange">Pull-ups ${l.pu.total}${l.pu.target ? '/' + l.pu.target + ' target' : ' total'}${l.pu.best ? ' (best ' + l.pu.best + ')' : ''}</span>`);
+        }
+        const notes = [
+          l.bi?.notes ? `<div style="margin-top:0.35rem;color:var(--muted);font-size:0.85rem"><strong>Biceps:</strong> ${escapeHTML(l.bi.notes)}</div>` : '',
+          l.tri?.notes ? `<div style="margin-top:0.35rem;color:var(--muted);font-size:0.85rem"><strong>Triceps:</strong> ${escapeHTML(l.tri.notes)}</div>` : '',
+          l.pu?.notes ? `<div style="margin-top:0.35rem;color:var(--muted);font-size:0.85rem"><strong>Pull-ups:</strong> ${escapeHTML(l.pu.notes)}</div>` : ''
+        ].join('');
+        return `<div class="history-item">
+          <div class="date">${d}</div>
+          <div>${parts.join(' ') || 'Empty log'}</div>
+          ${notes}
+        </div>`;
+      }).join('');
+    }
+
+    // ---------- Progress ----------
+    function shortDate(iso) {
+      const d = dateFromISO(iso);
+      return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    }
+
+    function formatNumber(value, maxDecimals = 1) {
+      const n = Number(value) || 0;
+      return n.toLocaleString(undefined, { maximumFractionDigits: maxDecimals });
+    }
+
+    function chartSVG(logs, valueKey, options = {}) {
+      const points = logs.slice(-12);
+      if (!points.length) return '';
+
+      const width = 560, height = 205;
+      const left = 42, right = 12, top = 16, bottom = 36;
+      const plotW = width - left - right;
+      const plotH = height - top - bottom;
+      const values = points.map(p => Number(p[valueKey]) || 0);
+      const target = Number(options.target) || 0;
+      let min = Math.min(...values, target || Infinity);
+      let max = Math.max(...values, target || -Infinity);
+      if (!Number.isFinite(min)) min = 0;
+      if (!Number.isFinite(max)) max = 1;
+      if (options.zeroBase) min = 0;
+      const spread = Math.max(1, max - min);
+      const pad = options.zeroBase ? Math.max(2, spread * 0.12) : Math.max(0.5, spread * 0.18);
+      let yMin = options.zeroBase ? 0 : Math.max(0, min - pad);
+      let yMax = max + pad;
+      if (yMax <= yMin) yMax = yMin + 1;
+
+      const x = i => left + (points.length === 1 ? plotW / 2 : (i / (points.length - 1)) * plotW);
+      const y = v => top + ((yMax - v) / (yMax - yMin)) * plotH;
+      const poly = points.map((p, i) => `${x(i).toFixed(1)},${y(Number(p[valueKey]) || 0).toFixed(1)}`).join(' ');
+
+      const grid = Array.from({ length: 4 }, (_, i) => {
+        const frac = i / 3;
+        const yy = top + frac * plotH;
+        const val = yMax - frac * (yMax - yMin);
+        return `<line x1="${left}" y1="${yy}" x2="${width-right}" y2="${yy}" stroke="#AECACD" stroke-opacity="0.32" stroke-width="1"/><text x="${left-7}" y="${yy+4}" text-anchor="end" font-size="10" fill="#5A5A5A">${escapeHTML(formatNumber(val, options.decimals ?? 1))}</text>`;
+      }).join('');
+
+      let targetLine = '';
+      if (target > 0) {
+        const ty = y(target);
+        if (ty >= top - 2 && ty <= top + plotH + 2) {
+          targetLine = `<line x1="${left}" y1="${ty}" x2="${width-right}" y2="${ty}" stroke="#6E9EA4" stroke-width="1.5" stroke-dasharray="5 5"/><text x="${width-right}" y="${Math.max(top+10, ty-6)}" text-anchor="end" font-size="10" font-weight="700" fill="#6E9EA4">Target ${escapeHTML(formatNumber(target, options.decimals ?? 0))}${escapeHTML(options.unit || '')}</text>`;
+        }
+      }
+
+      const dots = points.map((p, i) => `<circle cx="${x(i)}" cy="${y(Number(p[valueKey]) || 0)}" r="4.2" fill="#FF5B19" stroke="#FFFFFF" stroke-width="1.5"><title>${escapeHTML(shortDate(p.d))}: ${escapeHTML(formatNumber(p[valueKey], options.decimals ?? 1))}${escapeHTML(options.unit || '')}</title></circle>`).join('');
+      const labelIdx = [...new Set([0, Math.floor((points.length-1)/2), points.length-1])];
+      const labels = labelIdx.map(i => `<text x="${x(i)}" y="${height-9}" text-anchor="${i===0?'start':i===points.length-1?'end':'middle'}" font-size="10" fill="#5A5A5A">${escapeHTML(shortDate(points[i].d))}</text>`).join('');
+
+      return `<div class="chart-wrap"><svg class="progress-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHTML(options.aria || 'Progress chart')}">
+        ${grid}${targetLine}
+        <polyline points="${poly}" fill="none" stroke="#FF5B19" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        ${dots}${labels}
+      </svg></div>`;
+    }
+
+    function progressionHistory(logs, key, type) {
+      const changes = [];
+      let previous = null;
+      logs.forEach(log => {
+        const current = Number(log[key]) || 0;
+        if (!current) return;
+        if (previous && current > previous) {
+          changes.push({ d: log.d, from: previous, to: current });
+        }
+        previous = current;
+      });
+      const recent = changes.slice(-3).reverse();
+      if (!recent.length) return `<div class="progress-history-empty">Your increases will appear here after you move to a higher ${type === 'kg' ? 'working weight' : 'rep target'}.</div>`;
+      return `<div class="progress-history-grid">${recent.map(c => `<div class="progress-history-item"><div class="progress-history-date">${escapeHTML(shortDate(c.d))}</div><div class="progress-history-change">${escapeHTML(formatNumber(c.from, type === 'kg' ? 1 : 0))} → ${escapeHTML(formatNumber(c.to, type === 'kg' ? 1 : 0))} ${type}</div></div>`).join('')}</div>`;
+    }
+
+    function armProgressCard(logs, label) {
+      if (!logs.length) return `<div class="empty">Log some ${label.toLowerCase()} work to see progress.</div>`;
+      const last = logs[logs.length - 1];
+      const maxW = Math.max(...logs.map(x => Number(x.weight) || 0));
+      const adherence = Math.round((logs.filter(x => (Number(x.reps)||0) >= (Number(x.target)||0) && (Number(x.target)||0) > 0).length / logs.length) * 100);
+      const avgReps = logs.reduce((sum, x) => sum + (Number(x.reps)||0), 0) / logs.length;
+      return `
+        <div class="chart-summary">
+          <div class="chart-metric"><div class="chart-metric-value accent">${escapeHTML(formatKg(last.weight))} kg</div><div class="chart-metric-label">Current weight</div></div>
+          <div class="chart-metric"><div class="chart-metric-value">${escapeHTML(formatKg(maxW))} kg</div><div class="chart-metric-label">Heaviest used</div></div>
+          <div class="chart-metric"><div class="chart-metric-value">${logs.length}</div><div class="chart-metric-label">Sessions</div></div>
+        </div>
+        ${chartSVG(logs, 'weight', { unit:' kg', decimals:1, aria:`${label} working weight over time` })}
+        <div class="chart-foot">
+          <div><strong>${adherence}%</strong><span>Target adherence</span></div>
+          <div><strong>${escapeHTML(formatNumber(avgReps,1))}</strong><span>Average reps</span></div>
+          <div><strong>${escapeHTML(formatNumber(logs.reduce((s,x)=>s+(Number(x.reps)||0),0),0))}</strong><span>Total reps</span></div>
+        </div>
+        <div class="progress-history"><div class="progress-history-head"><span>Progression History</span><span style="color:var(--accent)">Recorded increases</span></div>${progressionHistory(logs,'weight','kg')}</div>`;
+    }
+
+    function pullupProgressCard(logs) {
+      if (!logs.length) return '<div class="empty">Log some pull-ups to see progress.</div>';
+      const last = logs[logs.length - 1];
+      const currentTarget = Number(last.target) || 0;
+      const maxBest = Math.max(...logs.map(x => Number(x.best) || 0));
+      const maxTotal = Math.max(...logs.map(x => Number(x.total) || 0));
+      const adherenceLogs = logs.filter(x => (Number(x.target)||0) > 0);
+      const adherence = adherenceLogs.length ? Math.round((adherenceLogs.filter(x => (Number(x.total)||0) >= (Number(x.target)||0)).length / adherenceLogs.length) * 100) : 0;
+      return `
+        <div class="chart-summary">
+          <div class="chart-metric"><div class="chart-metric-value accent">${currentTarget || '—'} reps</div><div class="chart-metric-label">Current target</div></div>
+          <div class="chart-metric"><div class="chart-metric-value">${maxTotal}</div><div class="chart-metric-label">Best daily total</div></div>
+          <div class="chart-metric"><div class="chart-metric-value">${maxBest}</div><div class="chart-metric-label">Best single set</div></div>
+        </div>
+        ${chartSVG(logs, 'total', { target: currentTarget, unit:' reps', decimals:0, zeroBase:true, aria:'Pull-up total reps per session with current target line' })}
+        <div class="chart-foot">
+          <div><strong>${adherence}%</strong><span>Target adherence</span></div>
+          <div><strong>${logs.length}</strong><span>Sessions</span></div>
+          <div><strong>${escapeHTML(formatNumber(logs.reduce((s,x)=>s+(Number(x.total)||0),0),0))}</strong><span>Lifetime reps</span></div>
+        </div>
+        <div class="progress-history"><div class="progress-history-head"><span>Progression History</span><span style="color:var(--accent)">Target increases</span></div>${progressionHistory(logs,'target','reps')}</div>`;
+    }
+
+    function renderProgress() {
+      const data = loadData();
+      const dates = Object.keys(data.logs).sort();
+      $('sDays').textContent = dates.length;
+
+      updateStreak();
+      $('sStreak').textContent = $('streakNum').textContent;
+
+      let biCount = 0, puCount = 0;
+      dates.forEach(d => {
+        const l = data.logs[d];
+        if (l.bi && (l.bi.reps > 0 || l.bi.done)) biCount++;
+        if (l.pu && (l.pu.total > 0 || l.pu.done)) puCount++;
+      });
+      $('sBi').textContent = biCount;
+      $('sPu').textContent = puCount;
+
+      const biLogs = dates.map(d => ({ d, ...data.logs[d].bi })).filter(x => x && (Number(x.reps)||0) > 0 && (Number(x.weight)||0) > 0);
+      const triLogs = dates.map(d => ({ d, ...data.logs[d].tri })).filter(x => x && (Number(x.reps)||0) > 0 && (Number(x.weight)||0) > 0);
+      const puLogs = dates.map(d => ({ d, ...data.logs[d].pu })).filter(x => x && (Number(x.total)||0) > 0);
+
+      $('biProgress').className = biLogs.length ? '' : 'empty';
+      $('triProgress').className = triLogs.length ? '' : 'empty';
+      $('puProgress').className = puLogs.length ? '' : 'empty';
+      $('biProgress').innerHTML = armProgressCard(biLogs, 'Biceps');
+      $('triProgress').innerHTML = armProgressCard(triLogs, 'Triceps');
+      $('puProgress').innerHTML = pullupProgressCard(puLogs);
+
+      let completed = 0;
+      if (data.startDate) {
+        dates.forEach(d => {
+          const log = data.logs[d];
+          if (log && (log.bi?.done || log.tri?.done || log.pu?.done ||
+              log.bi?.reps || log.tri?.reps || log.pu?.total)) completed++;
+        });
+      }
+      const pct = Math.min(100, Math.round((completed / 90) * 100));
+      $('chalText').textContent = `${completed} / 90`;
+      $('chalBar').style.width = pct + '%';
+      $('chalNote').textContent = completed >= 90
+        ? 'Challenge complete! 🎉'
+        : `You have logged ${completed} training days toward the 90-day goal.`;
+    }
+
+    // ---------- Settings ----------
+    function saveStartDate() {
+      const data = loadData();
+      const val = $('startDate').value.trim();
+      if (!isValidISODate(val)) {
+        showToast('Choose a valid date');
+        return;
+      }
+      data.startDate = val;
+      saveData(data);
+      loadTodayForm();
+      showToast('Start date saved');
+    }
+
+    async function exportData() {
+      const data = loadData();
+      const backup = {
+        app: 'PumpLog',
+        appVersion: APP_VERSION,
+        schemaVersion: 4,
+        exportedAt: new Date().toISOString(),
+        logs: data.logs,
+        startDate: data.startDate
+      };
+      const json = JSON.stringify(backup, null, 2);
+      const fileName = `pumplog-${todayISO()}.json`;
+      const blob = new Blob([json], { type: 'application/json' });
+      const file = new File([blob], fileName, { type: 'application/json' });
+
+      // iPhone-friendly: open the native Share Sheet when file sharing is supported.
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({ title: 'PumpLog Backup', files: [file] });
+          showToast('Backup ready ✓');
+          return;
+        } catch (err) {
+          if (err && err.name === 'AbortError') return;
+        }
+      }
+
+      // Desktop / browser fallback.
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    async function importData(event) {
+      const file = event.target.files && event.target.files[0];
+      event.target.value = '';
+      if (!file) return;
+      try {
+        const parsed = JSON.parse(await file.text());
+        const source = parsed && typeof parsed === 'object' && parsed.data && typeof parsed.data === 'object'
+          ? parsed.data
+          : parsed;
+
+        if (!source || typeof source !== 'object' || !source.logs || typeof source.logs !== 'object' || Array.isArray(source.logs)) {
+          throw new Error('Invalid backup');
+        }
+
+        const clean = {
+          schemaVersion: 4,
+          logs: sanitizeLogs(source.logs),
+          startDate: isValidISODate(source.startDate) ? source.startDate : null
+        };
+        saveData(clean);
+        loadTodayForm();
+        updateStreak();
+        renderHistory();
+        renderProgress();
+        showToast('Backup restored ✓');
+      } catch (err) {
+        showToast('Invalid backup file');
+      }
+    }
+
+    function clearAll() {
+      if (confirm('Delete ALL workout data? This cannot be undone.')) {
+        localStorage.removeItem('feederData');
+        loadTodayForm();
+        updateStreak();
+        renderHistory();
+        renderProgress();
+        showToast('Data cleared');
+      }
+    }
+
+    // ---------- Progression input refresh ----------
+    ['biWeight', 'biTarget', 'triWeight', 'triTarget', 'puTarget'].forEach(id => {
+      $(id).addEventListener('input', renderProgressionRecommendations);
+      $(id).addEventListener('change', renderProgressionRecommendations);
+    });
+
+    // ---------- Init ----------
+    loadTodayForm();
+    updateStreak();
+
+    // PWA / offline support. Service workers require HTTPS (or localhost).
+    if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
+    }
+  </script>
+</body>
+</html>
